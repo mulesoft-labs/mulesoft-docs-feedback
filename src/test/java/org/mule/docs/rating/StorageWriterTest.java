@@ -1,5 +1,7 @@
 package org.mule.docs.rating;
 
+import com.amazonaws.services.dynamodbv2.document.DynamoDB;
+import com.amazonaws.services.dynamodbv2.document.Table;
 import org.junit.Test;
 import org.mule.docs.rating.core.Rating;
 
@@ -21,5 +23,11 @@ public class StorageWriterTest {
                 new Date(),
                 2);
         StorageWriter.writeRatingToStorage(rating);
+    }
+
+    @Test
+    public void initializeTable_ReturnsTable() {
+        Table table = StorageWriter.initializeTable("ratings");
+        boolean boo = false;
     }
 }

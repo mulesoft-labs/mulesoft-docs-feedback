@@ -3,6 +3,7 @@ package org.mule.docs.rating;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import org.mule.docs.rating.health.ServiceAliveCheck;
 import org.mule.docs.rating.resources.RatingResource;
 
 public class RatingApplication extends Application<RatingConfiguration> {
@@ -20,6 +21,7 @@ public class RatingApplication extends Application<RatingConfiguration> {
                     Environment environment) {
         final RatingResource resource = new RatingResource();
         environment.jersey().register(resource);
+        environment.healthChecks().register("storage connection", new ServiceAliveCheck());
     }
 
 }

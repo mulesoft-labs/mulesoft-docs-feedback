@@ -47,7 +47,7 @@ public class StorageWriter {
      * Initializes the rating table with a primary key hash of the rating's id and date.
      * @param tableName The name of the table to create.
      */
-    private static Table initializeTable(String tableName) {
+    public static Table initializeTable(String tableName) {
         DynamoDB db = getClient();
         try {
             return db.createTable(tableName,
