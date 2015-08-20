@@ -1,6 +1,7 @@
 package org.mule.docs.rating.resources;
 
 import org.mule.docs.rating.StorageWriter;
+import org.mule.docs.rating.configuration.AwsConfiguration;
 import org.mule.docs.rating.core.Rating;
 import org.mule.docs.rating.core.RawRating;
 
@@ -15,7 +16,10 @@ import java.util.Date;
 @Produces(MediaType.APPLICATION_JSON)
 public class RatingResource {
 
-    public RatingResource() {
+    private final AwsConfiguration conf;
+
+    public RatingResource(AwsConfiguration conf) {
+        this.conf = conf;
     }
 
     @POST
@@ -29,8 +33,7 @@ public class RatingResource {
                 new Date(),
                 rawRating.getRating()
         );
-
-        StorageWriter.writeRatingToStorage(rating);
+        writeRating(rating);
         return "Successfully created rating.";
     }
 
@@ -40,5 +43,11 @@ public class RatingResource {
             ip = request.getHeader("X-Forwarded-For").split(",")[0];
         } catch (Exception ignored){}
         return ip;
+    }
+
+    private void writeRating(Rating rating) {
+        StorageWriter writer = new StorageWriter(this.conf);
+        writer.writeRatingToStorage(rating);
+        writer.closeClient();
     }
 }

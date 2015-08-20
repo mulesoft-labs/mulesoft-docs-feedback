@@ -1,36 +1,33 @@
 package org.mule.docs.rating;
 
-import java.io.File;
 import java.util.Arrays;
-import java.util.Iterator;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
+import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.*;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.Table;
-import com.amazonaws.services.dynamodbv2.document.TableCollection;
 import com.amazonaws.services.dynamodbv2.model.*;
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import org.mule.docs.rating.configuration.AwsConfiguration;
 import org.mule.docs.rating.core.Rating;
 import org.mule.docs.rating.util.Utilities;
 
-import javax.swing.plaf.synth.Region;
-
 public class StorageWriter {
+    private DynamoDB client;
+    private AwsConfiguration config;
+
+    public StorageWriter(AwsConfiguration config) {
+        this.config = config;
+        this.client = getClient();
+    }
 
     /**
      * Writes a rating object to storage.
      * @param rating The rating object to store.
      */
-    public static void writeRatingToStorage(Rating rating) {
+    public void writeRatingToStorage(Rating rating) {
         Table table = getTable("ratings");
 
         Item item = new Item()
@@ -47,7 +44,7 @@ public class StorageWriter {
      * Initializes the rating table with a primary key hash of the rating's id and date.
      * @param tableName The name of the table to create.
      */
-    public static Table initializeTable(String tableName) {
+    public Table initializeTable(String tableName) {
         DynamoDB db = getClient();
         try {
             return db.createTable(tableName,
@@ -63,14 +60,22 @@ public class StorageWriter {
         }
     }
 
-    private static Table getTable(String tableName) {
+    private Table getTable(String tableName) {
         return initializeTable(tableName);
     }
 
-    private static DynamoDB getClient() {
-        AmazonDynamoDBClient client = com.amazonaws.regions.Region.getRegion(Regions.US_WEST_2).createClient(
-                AmazonDynamoDBClient.class, new DefaultAWSCredentialsProviderChain(), null);
+    private DynamoDB getClient() {
+        if(this.client == null) {
+            BasicAWSCredentials awsCreds = new BasicAWSCredentials(this.config.getAccessKeyId(), this.config.getSecretAccessKey());
+            AmazonDynamoDBClient awsClient = new AmazonDynamoDBClient(awsCreds);
+            awsClient.configureRegion(Regions.US_WEST_2);
+            return new DynamoDB(awsClient);
+        } else {
+            return this.client;
+        }
+    }
 
-        return new DynamoDB(client);
+    public void closeClient() {
+        this.client.shutdown();
     }
 }

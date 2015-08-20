@@ -1,11 +1,17 @@
 package org.mule.docs.rating;
 
-import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Table;
 import org.junit.Test;
+import org.mule.docs.rating.configuration.AwsConfiguration;
 import org.mule.docs.rating.core.Rating;
+import org.yaml.snakeyaml.Yaml;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Copyright (C) MuleSoft, Inc - All Rights Reserved
@@ -13,8 +19,10 @@ import java.util.Date;
  */
 public class StorageWriterTest {
 
+
     @Test
     public void writeRatingToStorage_WithValidItem_SuccessfullyPostsToStorage() {
+        AwsConfiguration config = getAwsConfigurationFromYamlFile();
         Rating rating = new Rating(
                 "123",
                 "this page sucks",
@@ -22,12 +30,41 @@ public class StorageWriterTest {
                 "http://foo.com",
                 new Date(),
                 2);
-        StorageWriter.writeRatingToStorage(rating);
+        StorageWriter writer = new StorageWriter(config);
+        writer.writeRatingToStorage(rating);
+        writer.closeClient();
     }
+
 
     @Test
     public void initializeTable_ReturnsTable() {
-        Table table = StorageWriter.initializeTable("ratings");
+        AwsConfiguration config = getAwsConfigurationFromYamlFile();
+        StorageWriter writer = new StorageWriter(config);
+        Table table = writer.initializeTable("ratings");
         boolean boo = false;
+    }
+
+    @SuppressWarnings("unchecked")
+    public AwsConfiguration getAwsConfigurationFromYamlFile() {
+        InputStream input = null;
+        try {
+            input = new FileInputStream("configuration.yml");
+        } catch (FileNotFoundException e){
+            System.out.println("reading yml file failed");
+        }
+        if(input != null) {
+            Yaml yaml = new Yaml();
+            LinkedHashMap<String, Map<String, String>> map = (LinkedHashMap) yaml.load(input);
+            if(map != null) {
+                Map<String, String> configMap = map.get("configuration");
+                String accessKeyId = configMap.get("accessKeyId");
+                String secretAccessKey = configMap.get("secretAccessKey");
+                AwsConfiguration awsConfig = new AwsConfiguration();
+                awsConfig.setSecretAccessKey(secretAccessKey);
+                awsConfig.setAccessKeyId(accessKeyId);
+                return awsConfig;
+            }
+        }
+        return null;
     }
 }
