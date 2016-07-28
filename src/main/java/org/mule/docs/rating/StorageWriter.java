@@ -27,8 +27,8 @@ public class StorageWriter {
      * Writes a rating object to storage.
      * @param rating The rating object to store.
      */
-    public void writeRatingToStorage(Rating rating) {
-        Table table = getTable("ratings");
+    public void writeRatingToStorage(Rating rating, String tableName) {
+        Table table = getTable(tableName);
 
         Item item = new Item()
                 .withPrimaryKey("id", rating.getId(), "date", Utilities.convertDateToString(rating.getDate()))
@@ -46,7 +46,8 @@ public class StorageWriter {
      */
     public Table initializeTable(String tableName) {
         DynamoDB db = getClient();
-        try {
+        return db.getTable(tableName);
+        /*try {
             return db.createTable(tableName,
                     Arrays.asList(
                             new KeySchemaElement("id", KeyType.HASH),
@@ -57,7 +58,7 @@ public class StorageWriter {
                     new ProvisionedThroughput(10L, 10L));
         } catch(ResourceInUseException e) {
             return db.getTable(tableName);
-        }
+        }*/
     }
 
     private Table getTable(String tableName) {
@@ -68,7 +69,7 @@ public class StorageWriter {
         if(this.client == null) {
             BasicAWSCredentials awsCreds = new BasicAWSCredentials(this.config.getAccessKeyId(), this.config.getSecretAccessKey());
             AmazonDynamoDBClient awsClient = new AmazonDynamoDBClient(awsCreds);
-            awsClient.configureRegion(Regions.US_WEST_2);
+            awsClient.configureRegion(Regions.US_EAST_1);
             return new DynamoDB(awsClient);
         } else {
             return this.client;

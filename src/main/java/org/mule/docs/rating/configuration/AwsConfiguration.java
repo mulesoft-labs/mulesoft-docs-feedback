@@ -14,6 +14,9 @@ public class AwsConfiguration {
     @NotNull
     private String secretAccessKey;
 
+    @NotNull
+    private String tableName;
+
     public String getAccessKeyId() {
         return this.accessKeyId;
     }
@@ -28,5 +31,13 @@ public class AwsConfiguration {
 
     public void setSecretAccessKey(String secretAccessKey) {
         this.secretAccessKey = secretAccessKey;
+    }
+
+    public String getTableName() {
+        return tableName;
+    }
+
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
     }
 }

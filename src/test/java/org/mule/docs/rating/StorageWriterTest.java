@@ -31,7 +31,7 @@ public class StorageWriterTest {
                 new Date(),
                 2);
         StorageWriter writer = new StorageWriter(config);
-        writer.writeRatingToStorage(rating);
+        writer.writeRatingToStorage(rating, config.getTableName());
         writer.closeClient();
     }
 
@@ -39,8 +39,9 @@ public class StorageWriterTest {
     @Test
     public void initializeTable_ReturnsTable() {
         AwsConfiguration config = getAwsConfigurationFromYamlFile();
+        String tableName = config.getTableName();
         StorageWriter writer = new StorageWriter(config);
-        Table table = writer.initializeTable("ratings");
+        Table table = writer.initializeTable(tableName);
         boolean boo = false;
     }
 

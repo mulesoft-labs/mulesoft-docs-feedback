@@ -47,7 +47,7 @@ public class RatingResource {
 
     private void writeRating(Rating rating) {
         StorageWriter writer = new StorageWriter(this.conf);
-        writer.writeRatingToStorage(rating);
+        writer.writeRatingToStorage(rating, conf.getTableName());
         writer.closeClient();
     }
 }
